@@ -1,100 +1,97 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
 class Program
 {
-    static List<object> CheckYenNgua()
+    static void Main()
     {
         int dong = 3;
         int cot = 4;
-        int[,] arr = new int[,]
+        int[][] arr = new int[][]
         {
-            {2, 0, 5, -3},
-            {8, 0, 7, 5},
-            {5, 0, 11, 4}
+            new int[] {2, 0, 5, -3},
+            new int[] {8, 0, 7, 5},
+            new int[] {5, 0, 11, 4}
         };
 
-        List<object> result = new List<object>();
-        Dictionary<string, int> hashMap = new Dictionary<string, int>();
+        int[][] res = new int[dong][];
+        for (int i = 0; i < dong; i++)
+        {
+            int max = FindMax(arr[i]);
+            int count = CountMax(arr[i], max);
+
+            res[i] = new int[count * 2];
+            int colIndex = 0;
+
+            for (int j = 0; j < cot; j++)
+            {
+                if (arr[i][j] == max)
+                {
+                    res[i][colIndex++] = arr[i][j];
+                    res[i][colIndex++] = j;
+                }
+            }
+        }
+
+        int[][] final = new int[dong][];
+        int finalCount = 0;
 
         for (int i = 0; i < dong; i++)
         {
-            int[,] clone = (int[,])arr.Clone();
-
-            List<int> maxArr = new List<int>();
-            for (int j = 0; j < cot; j++)
+            for (int j = 0; j < res[i].Length; j += 2)
             {
-                maxArr.Add(clone[i, j]);
-            }
-            maxArr.Sort();
-
-            int maxVal = maxArr[cot - 1];
-
-            for (int j = 0; j < cot; j++)
-            {
-                if (arr[i, j] == maxVal)
+                if (CheckCondition(res[i][j], res[i][j + 1], dong, arr))
                 {
-                    hashMap[$"{arr[i, j]}"] = j;
-                    result.Add(arr[i, j]);
+                    final[finalCount++] = new int[] { res[i][j], i, res[i][j + 1] };
                 }
             }
         }
 
-        return Check(hashMap, result, dong, arr);
+        PrintResult(final, finalCount);
     }
 
-    static List<object> Check(Dictionary<string, int> map, List<object> res, int dong, int[,] arr)
+    static int FindMax(int[] array)
     {
-        List<object> result = new List<object>();
-        int k = 0;
-        while (k < res.Count)
+        int max = array[0];
+        foreach (var item in array)
         {
-            bool conditionSmallest = true;
-            int value = (int)res[k];
-            int index = map[value.ToString()];
-
-            for (int i = 0; i < dong; i++)
+            if (item > max)
             {
-                if (arr[i, index] < value)
-                {
-                    conditionSmallest = false;
-                    break;
-                }
+                max = item;
             }
-
-            if (conditionSmallest)
-            {
-                result.Add(value);
-                result.Add(new Dictionary<string, object> { { "Position", new int[] { k, index } } });
-            }
-
-            k++;
         }
-
-        return result;
+        return max;
     }
 
-    static void Main()
+    static int CountMax(int[] array, int max)
     {
-        var result = CheckYenNgua();
-        if (!result.Any())
-{
-        Console.WriteLine("Khong co gia tri nao thoa man dieu kien");
-        return ;
-}
-
-        foreach (var item in result)
+        int count = 0;
+        foreach (var item in array)
         {
-            if (item is int)
+            if (item == max)
             {
-                Console.Write($"value={item} ");
+                count++;
             }
-            else if (item is Dictionary<string, object>)
+        }
+        return count;
+    }
+
+    static bool CheckCondition(int value, int colIndex, int dong, int[][] arr)
+    {
+        for (int k = 0; k < dong; k++)
+        {
+            if (value > arr[k][colIndex])
             {
-                var position = ((Dictionary<string, object>)item)["Position"];
-                Console.WriteLine($"Position: [{((int[])position)[0]}, {((int[])position)[1]}]");
+                return false;
             }
+        }
+        return true;
+    }
+
+    static void PrintResult(int[][] final, int finalCount)
+    {
+        for (int i = 0; i < finalCount; i++)
+        {
+            Console.WriteLine($"[{final[i][0]}, {{Row: {final[i][1]}, Col: {final[i][2]}}}]");
         }
     }
 }
